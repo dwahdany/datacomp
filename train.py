@@ -1,13 +1,10 @@
 import argparse
 import collections
 import json
-import os
 import pickle
 import re
-import shutil
 from pathlib import Path
 
-import torch
 from cloudpathlib import CloudPath
 from training.distributed import world_info_from_env
 from training.main import main
@@ -76,7 +73,9 @@ def get_input_shards(data_dir, weights):
                 shard_count = metadata["output_shard_count"]
                 shard_format = metadata["output_shard_format"]
                 first_shard = shard_format.format(0).replace(".tar", "")
-                last_shard = shard_format.format(shard_count - 1).replace(".tar", "")
+                last_shard = shard_format.format(shard_count - 1).replace(
+                    ".tar", ""
+                )
                 filename = f"{{{first_shard}..{last_shard}}}.tar"
                 subfolder_str = prepare_filename(file_or_subdir / filename)
                 data_str_components.append(subfolder_str)
@@ -87,7 +86,9 @@ def get_input_shards(data_dir, weights):
     for prefix in sorted(list(prefix_map.keys())):
         last_tar = max([int(suffix) for suffix in prefix_map[prefix]])
         number_of_zeros = len(prefix_map[prefix][0])
-        filename = f"{{{0:0{number_of_zeros}d}..{last_tar:0{number_of_zeros}d}}}.tar"
+        filename = (
+            f"{{{0:0{number_of_zeros}d}..{last_tar:0{number_of_zeros}d}}}.tar"
+        )
         filename = prepare_filename(prefix + filename)
         data_str_components.append(filename)
     data_str = "::".join(data_str_components)
@@ -119,14 +120,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "--scale",
         type=str,
-        required=True,
+        # required=True,
+        default="small",
         choices=available_scales(),
         help="Competition scale.",
     )
     parser.add_argument(
         "--data_dir",
         type=path_or_cloudpath,
-        required=True,
+        default="/datasets/datacomp/shards",
+        # required=True,
         help='Path to directory where the data is stored. Multiple paths can be used, separated by "::".',
     )
     parser.add_argument(
@@ -146,7 +149,10 @@ if __name__ == "__main__":
         help="Path to directory where outputs will be stored.",
     )
     parser.add_argument(
-        "--exp_name", type=str, default=None, help="Name of the experiment for logging."
+        "--exp_name",
+        type=str,
+        default=None,
+        help="Name of the experiment for logging.",
     )
     parser.add_argument(
         "--use_cached_shards",
@@ -161,7 +167,10 @@ if __name__ == "__main__":
         help="Name of the project if logging with wandb.",
     )
     parser.add_argument(
-        "--workers", type=int, default=4, help="Number of workers for open_clip."
+        "--workers",
+        type=int,
+        default=4,
+        help="Number of workers for open_clip.",
     )
     parser.add_argument(
         "--precision",
@@ -204,7 +213,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--imagenet_val",
         type=str,
-        default=None,
+        # default=None,
+        default="/datasets/imagenet/val",
         help="Optional path to imagenet val set for conducting zero shot evaluation.",
     )
     parser.add_argument(
@@ -306,7 +316,9 @@ if __name__ == "__main__":
         if success == -1:
             print("Error running training. Exiting.")
 
-        final_checkpoint = log_dir / exp_name / "checkpoints" / f"epoch_latest.pt"
+        final_checkpoint = (
+            log_dir / exp_name / "checkpoints" / "epoch_latest.pt"
+        )
         assert (
             final_checkpoint.exists()
         ), f"Did not find the checkpoint at {final_checkpoint}"
