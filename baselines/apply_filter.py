@@ -1,10 +1,8 @@
 import multiprocessing as mp
-import os
 import time
 from functools import partial
-from multiprocessing import Pool
 from queue import Empty
-from typing import Any, List, Set, Tuple, Union
+from typing import Any, List, Optional, Set, Tuple, Union
 
 import fasttext
 import fsspec
@@ -13,6 +11,7 @@ import nltk
 import numpy as np
 import pandas as pd
 import torch
+import zarr
 from nltk.corpus import wordnet
 from tqdm import tqdm
 
@@ -79,7 +78,10 @@ def caption_filter(df: pd.DataFrame, lang_detect_model: Any) -> np.ndarray:
 
 @torch.no_grad()
 def get_centroid_ids_gpu(
-    features: torch.Tensor, centroids: torch.Tensor, batch_size: int, device: int
+    features: torch.Tensor,
+    centroids: torch.Tensor,
+    batch_size: int,
+    device: int,
 ) -> torch.Tensor:
     """assign features to closest centroid
 
@@ -152,7 +154,9 @@ def image_filter_helper(
                 key = "clip_b32_similarity_score"
 
             df = pd.read_parquet(
-                f"{path_root}.parquet", columns=["uid", "text", key], filesystem=fs
+                f"{path_root}.parquet",
+                columns=["uid", "text", key],
+                filesystem=fs,
             )
             df_index = df[key] >= threshold
             df = df[df_index]
@@ -191,7 +195,10 @@ def image_filter_helper(
 
         out_queue.put(
             np.array(
-                [(int(uid[:16], 16), int(uid[16:32], 16)) for uid in uids_to_keep],
+                [
+                    (int(uid[:16], 16), int(uid[16:32], 16))
+                    for uid in uids_to_keep
+                ],
                 np.dtype("u8,u8"),
             )
         )
@@ -208,10 +215,14 @@ def load_uids_with_basic_filter_helper(fs_url: Tuple[Any, str]) -> np.ndarray:
     """
     fs, url = fs_url
     df = pd.read_parquet(
-        url, columns=["uid", "text", "original_width", "original_height"], filesystem=fs
+        url,
+        columns=["uid", "text", "original_width", "original_height"],
+        filesystem=fs,
     )
 
-    lang_detect_model = fasttext.load_model(download("fasttext", "~/.cache/fasttext"))
+    lang_detect_model = fasttext.load_model(
+        download("fasttext", "~/.cache/fasttext")
+    )
 
     fasttext_lang_pred = df.text.apply(
         lambda x: get_fasttext_language(x, lang_detect_model)
@@ -222,7 +233,9 @@ def load_uids_with_basic_filter_helper(fs_url: Tuple[Any, str]) -> np.ndarray:
     uid_upper_uint64 = (uid_int // 2**64).astype("uint64")
     uid_lower_uint64 = (uid_int % 2**64).astype("uint64")
 
-    inds_array = np.array(list(zip(uid_upper_uint64, uid_lower_uint64)), "u8,u8")
+    inds_array = np.array(
+        list(zip(uid_upper_uint64, uid_lower_uint64)), "u8,u8"
+    )
 
     english_mask = fasttext_lang_pred == "en"
     caption_mask = (caption_num_words > 2) & (caption_num_chars > 5)
@@ -273,7 +286,9 @@ def load_uids_with_text_entity_helper(
         np.ndarray: array of uids
     """
     fs, url = fs_url
-    lang_detect_model = fasttext.load_model(download("fasttext", "~/.cache/fasttext"))
+    lang_detect_model = fasttext.load_model(
+        download("fasttext", "~/.cache/fasttext")
+    )
 
     df = pd.read_parquet(url, columns=["uid", "text"], filesystem=fs)
     fasttext_lang_pred = df.text.apply(
@@ -287,7 +302,9 @@ def load_uids_with_text_entity_helper(
     uid_upper_uint64 = (uid_int // 2**64).astype("uint64")
     uid_lower_uint64 = (uid_int % 2**64).astype("uint64")
 
-    inds_array = np.array(list(zip(uid_upper_uint64, uid_lower_uint64)), "u8,u8")
+    inds_array = np.array(
+        list(zip(uid_upper_uint64, uid_lower_uint64)), "u8,u8"
+    )
 
     english_mask = fasttext_lang_pred == "en"
     in21k_mask = contains_in21k_synset == True
@@ -387,7 +404,9 @@ def get_threshold(
         float: threshold value
     """
     print("loading all metadata for threshold computation")
-    df = load_metadata(metadata_dir_path, num_workers=num_workers, columns=[key])
+    df = load_metadata(
+        metadata_dir_path, num_workers=num_workers, columns=[key]
+    )
     n = int(len(df) * fraction)
     threshold = -np.sort(-df[key].values)[n]
 
@@ -424,7 +443,9 @@ def load_uids_with_clip_score(
 
     if threshold is None:
         # convert a fraction into a threshold
-        threshold = get_threshold(metadata_dir_path, key, fraction, num_workers)
+        threshold = get_threshold(
+            metadata_dir_path, key, fraction, num_workers
+        )
 
     fs, url = fsspec.core.url_to_fs(metadata_dir_path)
     parquet_paths = [(fs, str(x)) for x in fs.ls(url) if ".parquet" in x]
@@ -436,7 +457,9 @@ def load_uids_with_clip_score(
         gcld3_en_filter=gcld3_en_filter,
     )
 
-    return worker_threadpool(worker, np.concatenate, parquet_paths, num_workers)
+    return worker_threadpool(
+        worker, np.concatenate, parquet_paths, num_workers
+    )
 
 
 def load_uids(metadata_dir_path: str, num_workers: int) -> np.ndarray:
@@ -457,7 +480,9 @@ def load_uids(metadata_dir_path: str, num_workers: int) -> np.ndarray:
     )
 
 
-def load_uids_with_basic_filter(metadata_dir_path: str, num_workers: int) -> np.ndarray:
+def load_uids_with_basic_filter(
+    metadata_dir_path: str, num_workers: int
+) -> np.ndarray:
     """basic filter from the datacomp paper
 
     Args:
@@ -474,11 +499,16 @@ def load_uids_with_basic_filter(metadata_dir_path: str, num_workers: int) -> np.
     download("fasttext", "~/.cache/fasttext")
 
     return worker_threadpool(
-        load_uids_with_basic_filter_helper, np.concatenate, parquet_paths, num_workers
+        load_uids_with_basic_filter_helper,
+        np.concatenate,
+        parquet_paths,
+        num_workers,
     )
 
 
-def load_uids_with_text_entity(metadata_dir_path: str, num_workers: int) -> np.ndarray:
+def load_uids_with_text_entity(
+    metadata_dir_path: str, num_workers: int
+) -> np.ndarray:
     """text based filter from the datacomp paper
 
     Args:
@@ -500,7 +530,9 @@ def load_uids_with_text_entity(metadata_dir_path: str, num_workers: int) -> np.n
 
     worker = partial(load_uids_with_text_entity_helper, entity_set=entity_ids)
 
-    return worker_threadpool(worker, np.concatenate, parquet_paths, num_workers)
+    return worker_threadpool(
+        worker, np.concatenate, parquet_paths, num_workers
+    )
 
 
 def load_uids_with_image_filter(
@@ -508,6 +540,7 @@ def load_uids_with_image_filter(
     image_based_scale: str,
     num_gpus: int,
     batch_size: int,
+    target_dataset: Optional[str] = None,
     arch: Union[str, None] = None,
     threshold: Union[float, None] = None,
     fraction: Union[float, None] = None,
@@ -520,6 +553,7 @@ def load_uids_with_image_filter(
         image_based_scale (str): datacomp scale, used to load cached centroids for the pool
         num_gpus (int): number of gpu workers, each of which processes parquet, npy pairs
         batch_size (int, optional): gpu batch size for feature clustering. Defaults to 1024.
+        target_dataset (str, optional): target dataset to filter for. Defaults to None.
         arch (Union[str, None], optional): kind of features for clip filtering. Defaults to None.
         threshold (Union[float, None], optional): threshold to apply to clip features. Defaults to None.
         fraction (Union[float, None], optional): top k fraction to apply to clip features. Defaults to None.
@@ -533,14 +567,30 @@ def load_uids_with_image_filter(
     """
 
     # load ImageNet-1k OpenAI CLIP ViT-L/14 embeddings
-    print("loading ImageNet-1k embeddings")
-    target_embedding = torch.cat(
-        [
-            torch.load(download(f"in1k_clip_vit_l14_{i}"))["image_features"]
-            for i in tqdm(range(5))
-        ],
-        dim=0,
+    print(
+        f"Arguments received: metadata_dir_path={metadata_dir_path}, image_based_scale={image_based_scale}, num_gpus={num_gpus}, batch_size={batch_size}, target_dataset={target_dataset}, arch={arch}, threshold={threshold}, fraction={fraction}, num_workers={num_workers}"
     )
+
+    if target_dataset is None:
+        print("loading ImageNet-1k embeddings")
+        target_embedding = torch.cat(
+            [
+                torch.load(download(f"in1k_clip_vit_l14_{i}"))[
+                    "image_features"
+                ]
+                for i in tqdm(range(5))
+            ],
+            dim=0,
+        )
+    else:
+        print(f"loading embeddings for {target_dataset} from zarr store")
+
+        root = zarr.open_group(
+            "/datasets/datacomp/target_embeddings.zarr", mode="r"
+        )
+        target_embedding = torch.from_numpy(
+            np.array(root[f"ViT-L-14/{target_dataset}/train/embeddings"])
+        )
 
     # use pre-cached pool centroids based on the scale
     print("loading pool centroids")
@@ -555,7 +605,9 @@ def load_uids_with_image_filter(
 
     fs, url = fsspec.core.url_to_fs(metadata_dir_path)
     root_paths = [
-        (fs, str(x.split(".parquet")[0])) for x in fs.ls(url) if ".parquet" in x
+        (fs, str(x.split(".parquet")[0]))
+        for x in fs.ls(url)
+        if ".parquet" in x
     ]
 
     # initializing task queues
@@ -570,7 +622,9 @@ def load_uids_with_image_filter(
         if arch == "b32":
             key = "clip_b32_similarity_score"
 
-        threshold = get_threshold(metadata_dir_path, key, fraction, num_workers)
+        threshold = get_threshold(
+            metadata_dir_path, key, fraction, num_workers
+        )
 
     # download fasttext so that all workers dont't try to download at once
     download("fasttext", "~/.cache/fasttext")
@@ -613,7 +667,9 @@ def load_uids_with_image_filter(
                     all_uids.append(uids)
                     pbar.update(1)
                 except TimeoutError:
-                    raise RuntimeError("All processes dead but nothing in queue!")
+                    raise RuntimeError(
+                        "All processes dead but nothing in queue!"
+                    )
         except Empty:
             pass
 
@@ -670,6 +726,7 @@ def apply_filter(args: Any) -> None:
             args.image_based_scale,
             args.num_gpus,
             args.batch_size,
+            target_dataset=args.target_dataset,
         )
     elif args.name.startswith("clip_score"):
         print(f"threshold {args.threshold} and fraction {args.fraction}")
@@ -681,7 +738,9 @@ def apply_filter(args: Any) -> None:
             args.num_workers,
         )
     elif args.name == "image_based_intersect_clip_score":
-        print(f"threshold {args.threshold} and fraction {args.fraction}")
+        print(
+            f"threshold {args.threshold}, fraction {args.fraction}, and target dataset {args.target_dataset}"
+        )
         uids = load_uids_with_image_filter(
             args.metadata_dir,
             args.image_based_scale,
@@ -691,6 +750,7 @@ def apply_filter(args: Any) -> None:
             threshold=args.threshold,
             fraction=args.fraction,
             num_workers=args.num_workers,
+            target_dataset=args.target_dataset,
         )
     elif args.name == "laion2b":
         # special case for laion2b filtering

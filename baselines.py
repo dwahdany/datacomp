@@ -165,6 +165,14 @@ if __name__ == "__main__":
         default=None,
     )
 
+    parser.add_argument(
+        "--target_dataset",
+        type=str,
+        required=False,
+        help="target dataset to filter for. Defaults to None.",
+        default=None,
+    )
+
     args = parser.parse_args()
 
     # all error checking happens here and apply_filter assumes correct input

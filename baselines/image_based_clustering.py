@@ -4,6 +4,9 @@ The output of the script is a numpy file containing the computed cluster centers
 Please see image_based_clustering.md for additional information, and note that we also provide precomputed numpy files with the cluster centers used in the DataComp baselines.
 """
 
+import sys
+
+sys.path.append("/git/datacomp/")
 import argparse
 import multiprocessing as mp
 from functools import partial
@@ -57,7 +60,8 @@ def train_kmeans(
         index = faiss.GpuIndexFlatL2(res[0], d, flat_config[0])
     else:
         indexes = [
-            faiss.GpuIndexFlatL2(res[i], d, flat_config[i]) for i in range(num_gpus)
+            faiss.GpuIndexFlatL2(res[i], d, flat_config[i])
+            for i in range(num_gpus)
         ]
         index = faiss.IndexReplicas()
         for sub_index in indexes:
@@ -146,7 +150,9 @@ if __name__ == "__main__":
         type=str,
         help="directory (local or cloud) containing parquet, npz metadata",
     )
-    parser.add_argument("--save_path", type=str, help="local path to output centroids")
+    parser.add_argument(
+        "--save_path", type=str, help="local path to output centroids"
+    )
     parser.add_argument(
         "--num_clusters", default=100000, type=int, help="number of clusters"
     )
@@ -164,7 +170,10 @@ if __name__ == "__main__":
         help="ratio of samples to use (we need to sample because of memory constraint)",
     )
     parser.add_argument(
-        "--num_gpus", default=8, type=int, help="number of gpus used for clustering"
+        "--num_gpus",
+        default=8,
+        type=int,
+        help="number of gpus used for clustering",
     )
     parser.add_argument(
         "--num_workers",
@@ -193,9 +202,15 @@ if __name__ == "__main__":
     caption_filtering = not args.disable_caption_filtering
 
     fs, url = fsspec.core.url_to_fs(args.metadata_dir)
-    paths = [(fs, str(x.split(".parquet")[0])) for x in fs.ls(url) if ".parquet" in x]
+    paths = [
+        (fs, str(x.split(".parquet")[0]))
+        for x in fs.ls(url)
+        if ".parquet" in x
+    ]
 
-    print(f"caption filtering: {caption_filtering} | sample_ratio={sample_ratio}")
+    print(
+        f"caption filtering: {caption_filtering} | sample_ratio={sample_ratio}"
+    )
     embeddings = load_embedding(
         paths,
         key=args.embedding_key,
@@ -205,7 +220,9 @@ if __name__ == "__main__":
     )
     print(f"done: {len(embeddings)}")
 
-    print(f"start clustering: num_clusters = {num_clusters}, num_gpus = {num_gpus}")
+    print(
+        f"start clustering: num_clusters = {num_clusters}, num_gpus = {num_gpus}"
+    )
     embeddings = embeddings.astype(np.float32)
     centroids = train_kmeans(
         embeddings, num_clusters, num_gpus=num_gpus, seed=args.seed
