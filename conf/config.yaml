@@ -1,0 +1,6 @@
+gpu_id: 4
+seed: 0
+base_output_dir: "/raid/pdpl/small_clip_checkpoints/pcam_exclusion_nns"
+output_dir: ${base_output_dir}/datacomp_v${seed}/
+# exclude_uids_path: "/datasets/datacomp/filtered/pcam_exclusion_uids.npy"
+exclude_uids_path: "/datasets/datacomp/filtered/pcam_exclusion_nns_uids.npy"

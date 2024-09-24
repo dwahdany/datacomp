@@ -1,0 +1,1 @@
+export CUDA_VISIBLE_DEVICES=4;python train.py --seed 0 --output_dir /raid/pdpl/small_clip_checkpoints/datacomp_v0/

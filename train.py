@@ -116,7 +116,12 @@ def save_training_artifacts(args, config, checkpoint):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-
+    parser.add_argument(
+        "--exclude_uids",
+        type=str,
+        default=None,
+        help="Path to a .npy file containing uids to exclude from the dataset.",
+    )
     parser.add_argument(
         "--scale",
         type=str,
@@ -249,6 +254,8 @@ if __name__ == "__main__":
     per_gpu_batch_size = global_batch_size // (world_size * args.accum_freq)
 
     main_args = [
+        "--exclude-uids",
+        f"{args.exclude_uids}",
         "--save-frequency",
         f"{args.save_frequency}",
         "--ddp-static-graph",

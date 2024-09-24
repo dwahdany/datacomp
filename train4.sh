@@ -1,1 +1,0 @@
-export CUDA_VISIBLE_DEVICES=7;python train.py --seed 4 --output_dir /raid/pdpl/datacomp_v4/

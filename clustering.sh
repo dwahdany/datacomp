@@ -1,0 +1,1 @@
+export CUDA_VISIBLE_DEVICES=5,6,7; python baselines/image_based_clustering.py --metadata_dir /datasets/datacomp/metadata --save_path /datasets/datacomp/centroids --num_clusters 100000 --sample_ratio -1.0 --num_gpus 3 --num_workers 26
