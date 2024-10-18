@@ -123,6 +123,36 @@ if __name__ == "__main__":
         help="Path to a .npy file containing uids to exclude from the dataset.",
     )
     parser.add_argument(
+        "--indistribution_data_tar",
+        type=path_or_cloudpath,
+        default=None,
+        help="Path to the tar file containing the indistribution data.",
+    )
+    parser.add_argument(
+        "--indistribution_data_tar_upsample",
+        type=int,
+        default=1,
+        help="Upsample the indistribution data by this factor.",
+    )
+    parser.add_argument(
+        "--indistribution_data_sampling_rate",
+        type=float,
+        default=None,
+        help="Probability of sampling an indistribution data point.",
+    )
+    parser.add_argument(
+        "--indistribution_data_num_samples",
+        type=int,
+        default=None,
+        help="Number of samples in indistribution data.",
+    )
+    parser.add_argument(
+        "--indistribution_data_num_all_samples",
+        type=int,
+        default=None,
+        help="Number of samples in all data.",
+    )
+    parser.add_argument(
         "--scale",
         type=str,
         # required=True,
@@ -253,9 +283,12 @@ if __name__ == "__main__":
 
     per_gpu_batch_size = global_batch_size // (world_size * args.accum_freq)
 
+    # if args.indistribution_data_tar is not None:
+    #     assert (
+    #         args.indistribution_data_sampling_rate is not None
+    #     ), "Sampling rate must be specified when using indistribution data."
+
     main_args = [
-        "--exclude-uids",
-        f"{args.exclude_uids}",
         "--save-frequency",
         f"{args.save_frequency}",
         "--ddp-static-graph",
@@ -296,6 +329,40 @@ if __name__ == "__main__":
         "--resume",
         f"{args.resume}",
     ]
+    if args.exclude_uids is not None:
+        main_args.extend(["--exclude-uids", f"{args.exclude_uids}"])
+    if args.indistribution_data_tar is not None:
+        main_args.extend(
+            ["--indistribution_data_tar", f"{args.indistribution_data_tar}"]
+        )
+    if args.indistribution_data_tar_upsample is not None:
+        main_args.extend(
+            [
+                "--indistribution_data_tar_upsample",
+                f"{args.indistribution_data_tar_upsample}",
+            ]
+        )
+    if args.indistribution_data_sampling_rate is not None:
+        main_args.extend(
+            [
+                "--indistribution_data_sampling_rate",
+                f"{args.indistribution_data_sampling_rate}",
+            ]
+        )
+    if args.indistribution_data_num_samples is not None:
+        main_args.extend(
+            [
+                "--indistribution_data_num_samples",
+                f"{args.indistribution_data_num_samples}",
+            ]
+        )
+    # if args.indistribution_data_num_all_samples is not None:
+    #     main_args.extend(
+    #         [
+    #             "--indistribution_data_num_all_samples",
+    #             f"{args.indistribution_data_num_all_samples}",
+    #         ]
+    #     )
     main_args.append("--dataset-resampled")
     if args.report_to_wandb:
         main_args.extend(
@@ -317,6 +384,7 @@ if __name__ == "__main__":
     if args.grad_clip_norm is not None:
         main_args.extend(["--grad-clip-norm", f"{args.grad_clip_norm}"])
 
+    print(main_args)
     success = main(main_args)
 
     if rank == 0:

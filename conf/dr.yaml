@@ -1,0 +1,10 @@
+gpu_id: 4
+seed: 0
+# indistribution_data_tar_upsample: 1
+indistribution_data_sampling_rate: 0.01
+base_output_dir: "/raid/pdpl/small_clip_checkpoints/dr_${indistribution_data_sampling_rate}"
+output_dir: ${base_output_dir}/datacomp_v${seed}/
+indistribution_data_tar: '/datasets/fairvision/DR/shards/dr-train-{000000..000005}.tar'
+# indistribution_data_sampling_rate: 0.05787375303764862 # 0.0005787375303764862 # 6000 10367394
+# indistribution_data_num_samples: 6000
+# indistribution_data_num_all_samples: 2560000 #10367394 Use train_num_samples instead
