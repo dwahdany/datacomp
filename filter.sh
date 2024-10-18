@@ -1,0 +1,1 @@
+python baselines.py --name image_based --metadata_dir /datasets/datacomp/metadata --save_path /datasets/datacomp/filtered/glaucoma.npy --target_dataset fairvision/Glaucoma --image_based_scale small
