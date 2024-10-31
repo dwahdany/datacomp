@@ -1,0 +1,1 @@
+python resharder.py -i /datasets/datacomp/shards/ -o /datasets/datacomp/filtered/amd/ -s /datasets/datacomp/filtered/amd.npy
