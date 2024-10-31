@@ -130,7 +130,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--indistribution_data_tar_upsample",
-        type=int,
+        type=float,
         default=1,
         help="Upsample the indistribution data by this factor.",
     )
