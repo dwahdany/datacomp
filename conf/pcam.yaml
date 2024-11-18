@@ -1,0 +1,8 @@
+gpu_id: 4
+# indistribution_data_sampling_rate: 0.01
+indistribution_data_tar_upsample: 1
+base_output_dir: "/raid/pdpl/small_clip_checkpoints/upsample/"
+output_dir: ${base_output_dir}pcam_${indistribution_data_tar_upsample}/datacomp_v${seed}/
+indistribution_data_tar: '/datasets/pcam/shards/pcam-train-{000000..000262}.tar'
+seed: 0
+indistribution_data_num_samples: 262144
