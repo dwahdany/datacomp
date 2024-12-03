@@ -153,6 +153,25 @@ if __name__ == "__main__":
         help="Number of samples in all data.",
     )
     parser.add_argument(
+        "--curation_method",
+        type=str,
+        default=None,
+        choices=["image-based", "template-text", "linear-classifier"],
+        help="Curation method.",
+    )
+    parser.add_argument(
+        "--curation_task",
+        type=str,
+        default=None,
+        help="Curation task.",
+    )
+    parser.add_argument(
+        "--curation_ratio",
+        type=float,
+        default=None,
+        help="Curation ratio.",
+    )
+    parser.add_argument(
         "--scale",
         type=str,
         # required=True,
@@ -356,13 +375,12 @@ if __name__ == "__main__":
                 f"{args.indistribution_data_num_samples}",
             ]
         )
-    # if args.indistribution_data_num_all_samples is not None:
-    #     main_args.extend(
-    #         [
-    #             "--indistribution_data_num_all_samples",
-    #             f"{args.indistribution_data_num_all_samples}",
-    #         ]
-    #     )
+    if args.curation_method is not None:
+        main_args.extend(["--curation_method", args.curation_method])
+    if args.curation_task is not None:
+        main_args.extend(["--curation_task", args.curation_task])
+    if args.curation_ratio is not None:
+        main_args.extend(["--curation_ratio", str(args.curation_ratio)])
     main_args.append("--dataset-resampled")
     if args.report_to_wandb:
         main_args.extend(
