@@ -22,8 +22,6 @@ def train(cfg: DictConfig):
         "indistribution_data_tar",
         "indistribution_data_tar_upsample",
         "indistribution_data_sampling_rate",
-        "indistribution_data_num_samples",
-        # "indistribution_data_num_all_samples",
     ]:
         if k in cfg:
             command.extend([f"--{k}", str(cfg[k])])

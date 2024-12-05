@@ -141,18 +141,6 @@ if __name__ == "__main__":
         help="Probability of sampling an indistribution data point.",
     )
     parser.add_argument(
-        "--indistribution_data_num_samples",
-        type=int,
-        default=None,
-        help="Number of samples in indistribution data.",
-    )
-    parser.add_argument(
-        "--indistribution_data_num_all_samples",
-        type=int,
-        default=None,
-        help="Number of samples in all data.",
-    )
-    parser.add_argument(
         "--curation_method",
         type=str,
         default=None,
@@ -368,13 +356,6 @@ if __name__ == "__main__":
                 f"{args.indistribution_data_sampling_rate}",
             ]
         )
-    if args.indistribution_data_num_samples is not None:
-        main_args.extend(
-            [
-                "--indistribution_data_num_samples",
-                f"{args.indistribution_data_num_samples}",
-            ]
-        )
     if args.curation_method is not None:
         main_args.extend(["--curation_method", args.curation_method])
     if args.curation_task is not None:
@@ -403,6 +384,8 @@ if __name__ == "__main__":
         main_args.extend(["--grad-clip-norm", f"{args.grad_clip_norm}"])
 
     print(main_args)
+    # print(" ".join(main_args))
+    # exit(0)
     success = main(main_args)
 
     if rank == 0:

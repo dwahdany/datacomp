@@ -5,4 +5,3 @@ base_output_dir: "/raid/pdpl/small_clip_checkpoints/upsample/"
 output_dir: ${base_output_dir}fitzpatrick17k_${indistribution_data_tar_upsample}/datacomp_v${seed}/
 indistribution_data_tar: '/datasets/fitzpatrick17k/shards/fitzpatrick17k-train-{000000..000012}.tar'
 seed: 0
-indistribution_data_num_samples: 12858

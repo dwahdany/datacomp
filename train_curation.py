@@ -24,8 +24,6 @@ def train(cfg: DictConfig):
         str(cfg.curation.ratio),
         "--indistribution_data_tar",
         cfg.indistribution_data_tar,
-        "--indistribution_data_num_samples",
-        str(cfg.indistribution_data_num_samples),
     ]
 
     subprocess.run(command, check=True, cwd=os.path.dirname(__file__))
