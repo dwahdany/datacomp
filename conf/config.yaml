@@ -1,3 +1,6 @@
+defaults:
+  - upsample_base
+  - _self_
 gpu_id: 4
 seed: 0
 base_output_dir: "/raid/pdpl/small_clip_checkpoints/pcam_exclusion_nns"

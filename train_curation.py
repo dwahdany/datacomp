@@ -2,7 +2,9 @@ import os
 import subprocess
 
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
+
+OmegaConf.register_new_resolver("format_ratio", lambda x: f"{float(x):.1f}")
 
 
 @hydra.main(config_path="conf_curation", config_name="config")

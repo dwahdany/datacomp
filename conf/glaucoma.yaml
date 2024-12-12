@@ -1,7 +1,10 @@
+defaults:
+  - upsample_base
+  - _self_
 gpu_id: 7
 # indistribution_data_sampling_rate: 0.01
 indistribution_data_tar_upsample: 1
-base_output_dir: "/raid/pdpl/small_clip_checkpoints/upsample/"
 output_dir: ${base_output_dir}glaucoma_${indistribution_data_tar_upsample}/datacomp_v${seed}/
 indistribution_data_tar: '/datasets/fairvision/Glaucoma/shards/glaucoma-train-{000000..000005}.tar'
 seed: 0
+curation_task: 'fairvision/Glaucoma'

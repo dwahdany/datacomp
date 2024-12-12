@@ -1,0 +1,10 @@
+defaults:
+  - config
+  - _self_
+
+gpu_id: 5
+curation:
+  method: "template-text"
+  task: "fairvision/Glaucoma"
+  ratio: 0.5
+indistribution_data_tar: '/datasets/fairvision/Glaucoma/shards/glaucoma-train-{000000..000005}.tar'

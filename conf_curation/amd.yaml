@@ -1,18 +1,10 @@
-hydra:
-  sweeper:
-    _target_: hydra._internal.core_plugins.basic_sweeper.BasicSweeper
-    max_batch_size: 1
-    params:
-      curation.ratio: range(0.1, 1.1, 0.1)
-      curation.method: choice("template-text", "image-based", "linear-classifier")
-      
+defaults:
+  - config
+  - _self_
 
 gpu_id: 0
-seed: 0
-output_dir: ${base_output_dir}/datacomp_v${seed}/
 curation:
   method: "template-text"
   task: "fairvision/AMD"
   ratio: 0.5
-base_output_dir: "/raid/pdpl/small_clip_checkpoints/curation/${curation.method}/${curation.task}/ratio_${curation.ratio}"
 indistribution_data_tar: '/datasets/fairvision/AMD/shards/amd-train-{000000..000005}.tar'

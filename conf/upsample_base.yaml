@@ -1,0 +1,9 @@
+hydra:
+  sweeper:
+    _target_: hydra._internal.core_plugins.basic_sweeper.BasicSweeper
+    max_batch_size: 1
+    params:
+      indistribution_data_tar_upsample: 0.1,0.25,0.5,1.0,5.0,10.0
+      seed: 0,1,2
+
+base_output_dir: "/raid/pdpl/small_clip_checkpoints/upsample/"
