@@ -3,7 +3,7 @@ hydra:
     _target_: hydra._internal.core_plugins.basic_sweeper.BasicSweeper
     max_batch_size: 1
     params:
-      curation.ratio: range(0.1, 1.1, 0.1)
+      curation.ratio: range(0.1, 1.0, 0.1)
       curation.method: choice("template-text", "image-based", "linear-classifier")
 seed: 0
 output_dir: ${base_output_dir}/datacomp_v${seed}/
