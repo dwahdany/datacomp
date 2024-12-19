@@ -7,4 +7,4 @@ curation:
   method: "template-text"
   task: "fairvision/AMD"
   ratio: 0.5
-indistribution_data_tar: '/datasets/fairvision/AMD/shards/amd-train-{000000..000005}.tar'
+  indistribution_data_tar: '/datasets/fairvision/AMD/shards/amd-train-{000000..000005}.tar'
