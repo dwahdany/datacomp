@@ -1,9 +1,12 @@
 import os
 import subprocess
+from pathlib import Path
 
 import hydra
 from omegaconf import DictConfig, OmegaConf
-from pathlib import Path
+
+OmegaConf.register_new_resolver("format_ratio", lambda x: f"{float(x):.1f}")  # noqa: E731
+
 OmegaConf.register_new_resolver("format_ratio", lambda x: f"{float(x):.1f}")  # noqa: E731
 
 TASK_TO_TAR = {
