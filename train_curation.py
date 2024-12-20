@@ -3,7 +3,7 @@ import subprocess
 
 import hydra
 from omegaconf import DictConfig, OmegaConf
-
+from pathlib import Path
 OmegaConf.register_new_resolver("format_ratio", lambda x: f"{float(x):.1f}")  # noqa: E731
 
 TASK_TO_TAR = {
@@ -40,6 +40,17 @@ def train(cfg: DictConfig):
         "--indistribution_data_tar",
         cfg.curation.indistribution_data_tar,
     ]
+    output_path = (
+        Path(cfg.base_output_dir)
+        / f"datacomp_v{cfg.seed}"
+        / "small_scale"
+        / "checkpoints"
+        / "epoch_5.pt"
+    )
+    print(output_path)
+    if output_path.exists():
+        print(f"Output path {output_path} already exists, skipping")
+        return
     if cfg.dry_run:
         print(" ".join(command))
     else:
