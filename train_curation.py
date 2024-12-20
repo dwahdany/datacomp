@@ -7,7 +7,6 @@ from omegaconf import DictConfig, OmegaConf
 
 OmegaConf.register_new_resolver("format_ratio", lambda x: f"{float(x):.1f}")  # noqa: E731
 
-OmegaConf.register_new_resolver("format_ratio", lambda x: f"{float(x):.1f}")  # noqa: E731
 
 TASK_TO_TAR = {
     "fitzpatrick17k": "/datasets/fitzpatrick17k/shards/fitzpatrick17k-train-{000000..000012}.tar",

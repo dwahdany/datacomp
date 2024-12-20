@@ -1,4 +1,5 @@
 hydra:
+  mode: MULTIRUN
   sweeper:
     _target_: hydra._internal.core_plugins.basic_sweeper.BasicSweeper
     max_batch_size: 1
@@ -9,4 +10,3 @@ seed: 0
 dry_run: false
 output_dir: ${base_output_dir}/datacomp_v${seed}/
 base_output_dir: "/raid/pdpl/small_clip_checkpoints/curation/${curation.method}/${curation.task}/ratio_${format_ratio:${curation.ratio}}"
-dry_run: false 
