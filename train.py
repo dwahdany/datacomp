@@ -144,7 +144,7 @@ if __name__ == "__main__":
         "--curation_method",
         type=str,
         default=None,
-        choices=["image-based", "template-text", "linear-classifier"],
+        choices=["image-based", "template-text", "linear-classifier", "random"],
         help="Curation method.",
     )
     parser.add_argument(
