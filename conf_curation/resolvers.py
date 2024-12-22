@@ -6,6 +6,7 @@ TASK_TO_TAR = {
     "fairvision/AMD": "/datasets/fairvision/AMD/shards/amd-train-{000000..000005}.tar",
     "fairvision/Glaucoma": "/datasets/fairvision/Glaucoma/shards/glaucoma-train-{000000..000005}.tar",
     "pcam": "/datasets/pcam/shards/pcam-train-{000000..000262}.tar",
+    "food101": "/datasets/food101/shards/food101-train-{000000..000075}.tar",
 }
 
 OmegaConf.register_new_resolver(

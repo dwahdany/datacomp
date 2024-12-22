@@ -9,7 +9,7 @@ hydra:
     params:
       curation.ratio: range(0.1, 1.0, 0.1)
       curation.method: choice("template-text", "image-based", "linear-classifier", "random")
-      curation.task: choice("fitzpatrick17k", "fairvision/DR", "fairvision/AMD", "fairvision/Glaucoma", "pcam") #, "food101") #"fmow", "resisc45",)
+      curation.task: choice("fitzpatrick17k", "fairvision/DR", "fairvision/AMD", "fairvision/Glaucoma", "pcam", "food101") #"fmow", "resisc45",)
 
 gpu_id: 3
 dry_run: false 
