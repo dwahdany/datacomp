@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import subprocess
 from pathlib import Path
@@ -57,6 +58,34 @@ def train(cfg: DictConfig):
         print(" ".join(command))
     else:
         subprocess.run(command, check=True, cwd=os.path.dirname(__file__))
+        local_dir = Path(cfg.base_output_dir) / f"datacomp_v{cfg.seed}"
+        if local_dir.exists():
+
+            def upload_and_cleanup():
+                print(f"Starting upload of directory {local_dir} to S3")
+                s3_base_dir = (
+                    s3_client.S3Path(cfg.s3_output_dir)
+                    / f"datacomp_v{cfg.seed}"
+                )
+
+                for local_file in local_dir.rglob("*"):
+                    if local_file.is_file():
+                        relative_path = local_file.relative_to(local_dir)
+                        s3_path = s3_base_dir / relative_path
+                        print(f"Uploading {local_file} to {s3_path}")
+                        s3_path.write_bytes(local_file.read_bytes())
+
+                for path in local_dir.rglob("*"):
+                    if path.is_file():
+                        path.unlink()
+                    elif path.is_dir():
+                        path.rmdir()
+                local_dir.rmdir()
+                print("Upload complete and local directory cleaned up")
+
+            p = multiprocessing.Process(target=upload_and_cleanup)
+            p.start()
+            print("Upload process started in background")
 
 
 if __name__ == "__main__":
