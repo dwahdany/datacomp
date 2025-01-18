@@ -16,9 +16,9 @@ dependencies = [
     "torch>=2.5.1",
     "tqdm>=4.67.1",
     "training",
-    "webdataset>=0.2.100",
+    "webdataset==0.2.31",
     "zarr>=3.0.0",
 ]
 
 [tool.uv.sources]
-training = { path = "../pdpl/training", editable = true }
+training = { path = "training", editable = true }

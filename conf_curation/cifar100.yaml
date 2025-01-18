@@ -7,4 +7,4 @@ curation:
   method: "template-text"
   task: "cifar100"
   ratio: 0.5
-  indistribution_data_tar: "/datasets/cifar100/cifar100-train-{000000..000049}.tar"
+  indistribution_data_tar: "/datasets/cifar100/shards/cifar100-train-{000000..000049}.tar"

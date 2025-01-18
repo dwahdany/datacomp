@@ -517,7 +517,9 @@ def get_wds_dataset(
         #     return templates[task][0].format(c=class_names[task][int(label)])
 
         id_zarr = zarr.open("/raid/pdpl/id_downstream_idx.zarr", mode="r")
-        id_uids = set(id_zarr[args.curation_task.lower()]["id_indices"])
+        id_uids = set(
+            id_zarr[args.curation_task.lower()]["id_indices"][:].tolist()
+        )
         indistribution_data_num_samples = len(id_uids)
 
         p_id = args.indistribution_data_sampling_rate
@@ -580,7 +582,9 @@ def get_wds_dataset(
         ood_scores, ood_uids = get_ood_scores(args, scores_zarr)
         print(f"Loaded {len(ood_scores):,} OOD scores")
         try:
-            id_uids = id_zarr[args.curation_task.lower()]["id_indices"]
+            id_uids = np.array(
+                id_zarr[args.curation_task.lower()]["id_indices"]
+            )
         except KeyError as e:
             print(f"No id indices found for {args.curation_task}")
             print("ID zarr structure:")
