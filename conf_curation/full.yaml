@@ -1,0 +1,20 @@
+defaults:
+  - config
+  - _self_
+hydra:
+  mode: MULTIRUN
+  sweeper:
+    _target_: hydra._internal.core_plugins.basic_sweeper.BasicSweeper
+    max_batch_size: 1
+    params:
+      curation.ratio: 1.0
+      curation.method: "random"
+      curation.task: choice("fitzpatrick17k", "fairvision/DR", "fairvision/AMD", "fairvision/Glaucoma", "pcam", "food101", "cifar100", "stl10") #"fmow", "resisc45",)
+
+gpu_id: 3
+dry_run: false 
+curation:
+  method: "random"
+  task: "fitzpatrick17k"
+  ratio: 1.0
+  indistribution_data_tar: ${get_data_tar:${curation.task}}

@@ -8,7 +8,8 @@ hydra:
       curation.method: choice("template-text", "image-based", "linear-classifier", "random")
 seed: 0
 dry_run: false
+dir_prefix: "curation"
 output_dir: ${base_output_dir}/datacomp_v${seed}/
-base_output_dir: "/raid/pdpl/small_clip_checkpoints/curation/${curation.method}/${curation.task}/ratio_${format_ratio:${curation.ratio}}"
-s3_output_dir: "s3://pdpl/small_clip_checkpoints/curation/${curation.method}/${curation.task}/ratio_${format_ratio:${curation.ratio}}"
+base_output_dir: "/raid/pdpl/small_clip_checkpoints/${dir_prefix}/${curation.method}/${curation.task}/ratio_${format_ratio:${curation.ratio}}"
+s3_output_dir: "s3://pdpl/small_clip_checkpoints/${dir_prefix}/${curation.method}/${curation.task}/ratio_${format_ratio:${curation.ratio}}"
 s3_endpoint_url: "https://s3.fraunhofer.de"
