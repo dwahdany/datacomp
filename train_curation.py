@@ -1,5 +1,6 @@
 import multiprocessing
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -75,12 +76,7 @@ def train(cfg: DictConfig):
                         print(f"Uploading {local_file} to {s3_path}")
                         s3_path.write_bytes(local_file.read_bytes())
 
-                for path in local_dir.rglob("*"):
-                    if path.is_file():
-                        path.unlink()
-                    elif path.is_dir():
-                        path.rmdir()
-                local_dir.rmdir()
+                shutil.rmtree(local_dir)
                 print("Upload complete and local directory cleaned up")
 
             p = multiprocessing.Process(target=upload_and_cleanup)
