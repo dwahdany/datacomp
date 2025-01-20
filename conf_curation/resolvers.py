@@ -7,6 +7,8 @@ TASK_TO_TAR = {
     "fairvision/Glaucoma": "/datasets/fairvision/Glaucoma/shards/glaucoma-train-{000000..000005}.tar",
     "pcam": "/datasets/pcam/shards/pcam-train-{000000..000262}.tar",
     "food101": "/datasets/food101/shards/food101-train-{000000..000075}.tar",
+    "cifar100": "/datasets/cifar100/shards/cifar100-train-{000000..000049}.tar",
+    "stl10": "/datasets/stl10/shards/stl10-train-{000000..000004}.tar",
 }
 
 OmegaConf.register_new_resolver(
