@@ -95,33 +95,6 @@ def get_ood_scores(args, scores_zarr):
     return ood_scores, ood_uids
 
 
-def uid_str_to_int(uid_str: np.ndarray) -> np.ndarray:
-    uid_str = np.asarray(uid_str, dtype="U32")
-
-    first_half = np.frombuffer(uid_str.tobytes(), dtype="U16").reshape(-1, 2)[
-        :, 0
-    ]
-    second_half = np.frombuffer(uid_str.tobytes(), dtype="U16").reshape(-1, 2)[
-        :, 1
-    ]
-
-    first_ints = np.array([int(x, 16) for x in first_half], dtype=np.uint64)
-    second_ints = np.array([int(x, 16) for x in second_half], dtype=np.uint64)
-
-    result = np.empty(len(uid_str), dtype=[("f0", "u8"), ("f1", "u8")])
-    result["f0"] = first_ints
-    result["f1"] = second_ints
-
-    return result
-
-
-def uid_int_to_str(uid_int: np.ndarray) -> np.ndarray:
-    def uid_to_str(uid):
-        return format(int(uid[0]) << 64 | uid[1], "032x")
-
-    return np.vectorize(uid_to_str)(uid_int)
-
-
 class CsvDataset(Dataset):
     def __init__(
         self,
