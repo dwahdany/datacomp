@@ -66,6 +66,7 @@ def parse_args(args):
             "linear-classifier",
             "image-based",
             "random",
+            "trak",
         ],
         help="Curation method to use.",
     )

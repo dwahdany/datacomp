@@ -6,10 +6,10 @@ import re
 from pathlib import Path
 
 from cloudpathlib import CloudPath
-from training.distributed import world_info_from_env
-from training.main import main
 
 from scale_configs import available_scales, get_scale_config
+from training.distributed import world_info_from_env
+from training.main import main
 
 
 def prepare_filename(filename):
@@ -144,7 +144,13 @@ if __name__ == "__main__":
         "--curation_method",
         type=str,
         default=None,
-        choices=["image-based", "template-text", "linear-classifier", "random"],
+        choices=[
+            "image-based",
+            "template-text",
+            "linear-classifier",
+            "random",
+            "trak",
+        ],
         help="Curation method.",
     )
     parser.add_argument(
@@ -395,9 +401,9 @@ if __name__ == "__main__":
         final_checkpoint = (
             log_dir / exp_name / "checkpoints" / "epoch_latest.pt"
         )
-        assert (
-            final_checkpoint.exists()
-        ), f"Did not find the checkpoint at {final_checkpoint}"
+        assert final_checkpoint.exists(), (
+            f"Did not find the checkpoint at {final_checkpoint}"
+        )
         save_training_artifacts(args, config, final_checkpoint)
 
         print("Done training.")

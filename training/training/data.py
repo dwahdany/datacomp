@@ -45,41 +45,19 @@ except ImportError:
     hvd = None
 
 
-def get_task(indistribution_data_tar):
-    if "fairvision/Glaucoma" in indistribution_data_tar:
-        task = "fairvision/glaucoma"
-    elif "fairvision/AMD" in indistribution_data_tar:
-        task = "fairvision/amd"
-    elif "fairvision/DR" in indistribution_data_tar:
-        task = "fairvision/dr"
-    elif "fitzpatrick17k" in indistribution_data_tar:
-        task = "fitzpatrick17k"
-    elif "pcam" in indistribution_data_tar:
-        task = "pcam"
-    elif "food101" in indistribution_data_tar:
-        task = "food101"
-    elif "cifar100" in indistribution_data_tar:
-        task = "cifar100"
-    elif "stl10" in indistribution_data_tar:
-        task = "stl10"
-    else:
-        raise ValueError(f"Unknown task: {indistribution_data_tar}")
-    return task
-
-
 def _read_parquet(file):
     return pd.read_parquet(file, columns=["uid"])
 
 
 def get_ood_scores(args, scores_zarr):
     if args.curation_method == "trak":
-        scores_zarr = zarr.open("/pdpl/trak_scores.zarr", mode="r")
-        if args.indistribution_data_tar:
-            scores_zarr = scores_zarr["raw"]
+        scores_zarr = zarr.open("/raid/pdpl/trak_scores.zarr", mode="r")
+        if args.indistribution_data_tar is None:
+            scores_zarr = scores_zarr["raw"][args.curation_task.lower()]
         else:
-            scores_zarr = scores_zarr[get_task(args.indistribution_data_tar)]
+            scores_zarr = scores_zarr[args.curation_task.lower()]["commonpool"]
         scores = scores_zarr["ood_scores"][:]
-        uids = scores_zarr["uids"][:].astype(str)
+        uids = scores_zarr["ood_uids"][:].astype(str)
         return scores, uids
 
     metadata_dir = "/datasets/datacomp/metadata"
@@ -516,7 +494,7 @@ def get_wds_dataset(
     pipelines = [[dataset]]
 
     if args.indistribution_data_tar is not None:
-        task = get_task(args.indistribution_data_tar)
+        task = args.curation_task
 
         ds_class = {
             "cifar10": CIFAR10,
