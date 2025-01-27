@@ -45,11 +45,43 @@ except ImportError:
     hvd = None
 
 
+def get_task(indistribution_data_tar):
+    if "fairvision/Glaucoma" in indistribution_data_tar:
+        task = "fairvision/glaucoma"
+    elif "fairvision/AMD" in indistribution_data_tar:
+        task = "fairvision/amd"
+    elif "fairvision/DR" in indistribution_data_tar:
+        task = "fairvision/dr"
+    elif "fitzpatrick17k" in indistribution_data_tar:
+        task = "fitzpatrick17k"
+    elif "pcam" in indistribution_data_tar:
+        task = "pcam"
+    elif "food101" in indistribution_data_tar:
+        task = "food101"
+    elif "cifar100" in indistribution_data_tar:
+        task = "cifar100"
+    elif "stl10" in indistribution_data_tar:
+        task = "stl10"
+    else:
+        raise ValueError(f"Unknown task: {indistribution_data_tar}")
+    return task
+
+
 def _read_parquet(file):
     return pd.read_parquet(file, columns=["uid"])
 
 
 def get_ood_scores(args, scores_zarr):
+    if args.curation_method == "trak":
+        scores_zarr = zarr.open("/pdpl/trak_scores.zarr", mode="r")
+        if args.indistribution_data_tar:
+            scores_zarr = scores_zarr["raw"]
+        else:
+            scores_zarr = scores_zarr[get_task(args.indistribution_data_tar)]
+        scores = scores_zarr["ood_scores"][:]
+        uids = scores_zarr["uids"][:].astype(str)
+        return scores, uids
+
     metadata_dir = "/datasets/datacomp/metadata"
     parquet_files = glob(os.path.join(metadata_dir, "*.parquet"))
     print(f"Found {len(parquet_files)} parquet files")
@@ -484,24 +516,7 @@ def get_wds_dataset(
     pipelines = [[dataset]]
 
     if args.indistribution_data_tar is not None:
-        if "fairvision/Glaucoma" in args.indistribution_data_tar:
-            task = "fairvision/glaucoma"
-        elif "fairvision/AMD" in args.indistribution_data_tar:
-            task = "fairvision/amd"
-        elif "fairvision/DR" in args.indistribution_data_tar:
-            task = "fairvision/dr"
-        elif "fitzpatrick17k" in args.indistribution_data_tar:
-            task = "fitzpatrick17k"
-        elif "pcam" in args.indistribution_data_tar:
-            task = "pcam"
-        elif "food101" in args.indistribution_data_tar:
-            task = "food101"
-        elif "cifar100" in args.indistribution_data_tar:
-            task = "cifar100"
-        elif "stl10" in args.indistribution_data_tar:
-            task = "stl10"
-        else:
-            raise ValueError(f"Unknown task: {args.indistribution_data_tar}")
+        task = get_task(args.indistribution_data_tar)
 
         ds_class = {
             "cifar10": CIFAR10,
