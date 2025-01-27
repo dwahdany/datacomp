@@ -3,10 +3,13 @@ import json
 import logging
 import math
 import os
+import pickle
 import random
 import sys
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from glob import glob
 from multiprocessing import Value
 from typing import Callable, Optional
 
@@ -27,6 +30,7 @@ from torch.utils.data import (
 )
 from torch.utils.data.distributed import DistributedSampler
 from torchvision.datasets import CIFAR10, CIFAR100, STL10, Food101
+from tqdm import tqdm
 from webdataset.filters import _shuffle
 from webdataset.tariterators import (
     base_plus_ext,
@@ -35,12 +39,87 @@ from webdataset.tariterators import (
     valid_sample,
 )
 
-from training.pdpl import get_ood_scores
-
 try:
     import horovod.torch as hvd
 except ImportError:
     hvd = None
+
+
+def _read_parquet(file):
+    return pd.read_parquet(file, columns=["uid"])
+
+
+def get_ood_scores(args, scores_zarr):
+    metadata_dir = "/datasets/datacomp/metadata"
+    parquet_files = glob(os.path.join(metadata_dir, "*.parquet"))
+    print(f"Found {len(parquet_files)} parquet files")
+
+    # Process parquet files in parallel using ThreadPoolExecutor
+    with ThreadPoolExecutor() as executor:
+        # Map maintains order of completion based on input order
+        dfs = list(
+            tqdm(
+                executor.map(_read_parquet, parquet_files),
+                desc="Loading parquet files",
+                total=len(parquet_files),
+            )
+        )
+
+    metadata_df = pd.concat(dfs, ignore_index=True)
+    print(f"Loaded {len(metadata_df):,} total samples")
+
+    # metadata_zarr = zarr.open("/datasets/datacomp/metadata_zarr", mode="r")
+    # uids_all = metadata_zarr["uids"][:]
+    # uids_all = uid_int_to_str(uids_all)
+
+    uid_path = "/datasets/datacomp/present_uids.pkl"
+    if os.path.exists(uid_path):
+        with open(uid_path, "rb") as f:
+            uids = pickle.load(f)
+    else:
+        raise ValueError("UIDs not found")
+
+    download_mask = metadata_df.uid.isin(uids).to_numpy()
+    # download_mask = uids_all.isin(uids).to_numpy()
+    download_idx = np.where(download_mask)[0]
+
+    if args.curation_method == "random":
+        ood_scores = np.zeros(len(download_idx))
+    else:
+        ood_scores = scores_zarr[args.curation_method][args.curation_task][
+            "ood_scores"
+        ][download_idx]
+
+    # ood_uids = uids_all[download_idx]
+    ood_uids = metadata_df.uid[download_idx]
+    return ood_scores, ood_uids
+
+
+def uid_str_to_int(uid_str: np.ndarray) -> np.ndarray:
+    uid_str = np.asarray(uid_str, dtype="U32")
+
+    first_half = np.frombuffer(uid_str.tobytes(), dtype="U16").reshape(-1, 2)[
+        :, 0
+    ]
+    second_half = np.frombuffer(uid_str.tobytes(), dtype="U16").reshape(-1, 2)[
+        :, 1
+    ]
+
+    first_ints = np.array([int(x, 16) for x in first_half], dtype=np.uint64)
+    second_ints = np.array([int(x, 16) for x in second_half], dtype=np.uint64)
+
+    result = np.empty(len(uid_str), dtype=[("f0", "u8"), ("f1", "u8")])
+    result["f0"] = first_ints
+    result["f1"] = second_ints
+
+    return result
+
+
+def uid_int_to_str(uid_int: np.ndarray) -> np.ndarray:
+    def uid_to_str(uid):
+        return format(int(uid[0]) << 64 | uid[1], "032x")
+
+    return np.vectorize(uid_to_str)(uid_int)
 
 
 class CsvDataset(Dataset):
