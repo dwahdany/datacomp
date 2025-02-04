@@ -7,9 +7,7 @@ import pickle
 import random
 import sys
 import warnings
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from glob import glob
 from multiprocessing import Value
 from typing import Callable, Optional
 
@@ -30,7 +28,6 @@ from torch.utils.data import (
 )
 from torch.utils.data.distributed import DistributedSampler
 from torchvision.datasets import CIFAR10, CIFAR100, STL10, Food101
-from tqdm import tqdm
 from webdataset.filters import _shuffle
 from webdataset.tariterators import (
     base_plus_ext,
@@ -45,42 +42,21 @@ except ImportError:
     hvd = None
 
 
-def _read_parquet(file):
-    return pd.read_parquet(file, columns=["uid"])
-
-
 def get_ood_scores(args, scores_zarr):
     if args.curation_method == "trak":
         scores_zarr = zarr.open("/raid/pdpl/trak_scores.zarr", mode="r")
         if args.indistribution_data_tar is None:
             scores_zarr = scores_zarr["raw"][args.curation_task.lower()]
         else:
-            scores_zarr = scores_zarr[args.curation_task.lower()]["commonpool"]
+            scores_zarr = scores_zarr[args.curation_task.lower()][
+                args.curation_task.lower()
+            ]
         scores = scores_zarr["ood_scores"][:]
-        uids = scores_zarr["ood_uids"][:].astype(str)
+        uids = scores_zarr["ood_uids"][:]
         return scores, uids
 
-    metadata_dir = "/datasets/datacomp/metadata"
-    parquet_files = glob(os.path.join(metadata_dir, "*.parquet"))
-    print(f"Found {len(parquet_files)} parquet files")
-
-    # Process parquet files in parallel using ThreadPoolExecutor
-    with ThreadPoolExecutor() as executor:
-        # Map maintains order of completion based on input order
-        dfs = list(
-            tqdm(
-                executor.map(_read_parquet, parquet_files),
-                desc="Loading parquet files",
-                total=len(parquet_files),
-            )
-        )
-
-    metadata_df = pd.concat(dfs, ignore_index=True)
-    print(f"Loaded {len(metadata_df):,} total samples")
-
-    # metadata_zarr = zarr.open("/datasets/datacomp/metadata_zarr", mode="r")
-    # uids_all = metadata_zarr["uids"][:]
-    # uids_all = uid_int_to_str(uids_all)
+    datacomp = zarr.open("/datasets/datacomp/metadata_zarr", mode="r")
+    ood_uids = datacomp["uid"][:]
 
     uid_path = "/datasets/datacomp/present_uids.pkl"
     if os.path.exists(uid_path):
@@ -89,8 +65,7 @@ def get_ood_scores(args, scores_zarr):
     else:
         raise ValueError("UIDs not found")
 
-    download_mask = metadata_df.uid.isin(uids).to_numpy()
-    # download_mask = uids_all.isin(uids).to_numpy()
+    download_mask = np.isin(ood_uids, uids)
     download_idx = np.where(download_mask)[0]
 
     if args.curation_method == "random":
@@ -100,8 +75,7 @@ def get_ood_scores(args, scores_zarr):
             "ood_scores"
         ][download_idx]
 
-    # ood_uids = uids_all[download_idx]
-    ood_uids = metadata_df.uid[download_idx]
+    ood_uids = ood_uids[download_idx]
     return ood_scores, ood_uids
 
 
@@ -673,9 +647,20 @@ def get_wds_dataset(
                     )
         else:
             if args.indistribution_data_tar is not None:
-                id_scores = scores_zarr[args.curation_method][
-                    args.curation_task
-                ]["id_scores"]
+                if args.curation_method == "trak":
+                    trak_scores_zarr = zarr.open(
+                        "/raid/pdpl/trak_scores.zarr", mode="r"
+                    )
+                    id_scores = trak_scores_zarr[args.curation_task.lower()][
+                        args.curation_task.lower()
+                    ]["id_scores"][:]
+                    id_uids = trak_scores_zarr[args.curation_task.lower()][
+                        args.curation_task.lower()
+                    ]["id_uids"][:]
+                else:
+                    id_scores = scores_zarr[args.curation_method][
+                        args.curation_task
+                    ]["id_scores"][:]
                 all_scores = np.concatenate([ood_scores, id_scores])
             else:
                 all_scores = ood_scores
