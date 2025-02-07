@@ -52,16 +52,16 @@ def get_ood_scores(args, scores_zarr):
                 args.curation_task.lower()
             ]
         scores = scores_zarr["ood_scores"][:]
-        uids = scores_zarr["ood_uids"][:]
+        uids = scores_zarr["ood_uids"][:].astype("U32")
         return scores, uids
 
-    datacomp = zarr.open("/datasets/datacomp/metadata_zarr", mode="r")
-    ood_uids = datacomp["uid"][:]
+    datacomp = zarr.open("/datasets/datacomp/metadata.zarr", mode="r")
+    ood_uids = datacomp["uid"][:].astype("U32")
 
     uid_path = "/datasets/datacomp/present_uids.pkl"
     if os.path.exists(uid_path):
         with open(uid_path, "rb") as f:
-            uids = pickle.load(f)
+            uids = np.asarray(pickle.load(f), dtype="U32")
     else:
         raise ValueError("UIDs not found")
 
@@ -594,7 +594,7 @@ def get_wds_dataset(
 
     if args.curation_method is not None:
         scores_zarr = zarr.open(
-            "/datasets/datacomp/nearest_neighbor_scores.zarr", mode="r"
+            "/raid/pdpl/nearest_neighbor_scores.zarr", mode="r"
         )
         id_zarr = zarr.open("/raid/pdpl/id_downstream_idx.zarr", mode="r")
         print(f"Enabling curation method: {args.curation_method}")
