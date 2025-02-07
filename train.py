@@ -56,7 +56,7 @@ def get_input_shards(data_dir, weights):
     files_or_subdirs = list(data_dir.iterdir())
     data_str_components = []
     prefix_map = collections.defaultdict(list)
-    pattern = re.compile("\d+$")  # Sequence of digits at the end of the string
+    pattern = re.compile(r"\d+$")  # Sequence of digits at the end of the string
     count_tars = 0
     for file_or_subdir in files_or_subdirs:
         if file_or_subdir.suffix == ".tar":
