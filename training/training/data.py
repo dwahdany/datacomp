@@ -620,7 +620,13 @@ def get_wds_dataset(
 
             print_zarr_structure(id_zarr)
             raise e
-
+        
+        if args.curation_ratio < 0:
+            print(f"Aiming to keep {abs(args.curation_ratio)} multiples of the data. Converting to percentage ...", end="")
+            ood_num_samples = len(ood_uids)
+            id_num_samples = len(id_uids)
+            args.curation_ratio = abs(args.curation_ratio) * (id_num_samples) / (ood_num_samples + id_num_samples)
+            print(f"Done. Now aiming to keep {args.curation_ratio:.2%} of the data")
         print(f"Aiming to keep {args.curation_ratio:.2%} of the data")
         if args.curation_method == "random":
             if args.curation_ratio == 1.0:

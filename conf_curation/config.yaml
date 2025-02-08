@@ -4,8 +4,8 @@ hydra:
     _target_: hydra._internal.core_plugins.basic_sweeper.BasicSweeper
     max_batch_size: 1
     params:
-      curation.ratio: choice(0.1, 0.2, 0.5, 0.75)
-      curation.method: choice("template-text", "image-based", "linear-classifier", "random", "trak")
+      curation.ratio: choice(-1, -2, 0.1, 0.2, 0.3, 0.5, 0.8)
+      curation.method: choice("template-text", "template-image", "image-based", "linear-classifier") #, "random", "trak")
 seed: 0
 dry_run: false
 dir_prefix: "curation"
