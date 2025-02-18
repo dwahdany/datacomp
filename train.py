@@ -147,6 +147,7 @@ if __name__ == "__main__":
         choices=[
             "image-based",
             "template-text",
+            "template-image",
             "linear-classifier",
             "random",
             "trak",

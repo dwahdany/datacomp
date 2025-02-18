@@ -7,8 +7,8 @@ hydra:
     _target_: hydra._internal.core_plugins.basic_sweeper.BasicSweeper
     max_batch_size: 1
     params:
-      curation.ratio: choice(0.1, 0.2, 0.5, 0.75)
-      curation.method: choice("template-text", "image-based", "linear-classifier", "random")
+      curation.ratio: choice(0.1, 0.2, 0.5, 0.8)
+      curation.method: choice("template-text", "template-image", "image-based", "linear-classifier") # "trak", "random")
       curation.task: choice( "pcam",  "fairvision/AMD", "food101", "cifar100") #"fmow", "resisc45", "fairvision/DR",  "fitzpatrick17k", "fairvision/Glaucoma",)
 
 gpu_id: 3

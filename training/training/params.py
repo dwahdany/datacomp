@@ -63,6 +63,7 @@ def parse_args(args):
         default=None,
         choices=[
             "template-text",
+            "template-image",
             "linear-classifier",
             "image-based",
             "random",

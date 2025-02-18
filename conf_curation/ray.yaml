@@ -1,0 +1,12 @@
+seeds: [0,1,2]
+# dir_prefix: "curation"
+# output_dir: ${base_output_dir}/datacomp_v${seed}/
+# base_output_dir: "/raid/pdpl/small_clip_checkpoints/${dir_prefix}/${curation.method}/${curation.task}/ratio_${curation.ratio}"
+# s3_output_dir: "s3://pdpl/small_clip_checkpoints/${dir_prefix}/${curation.method}/${curation.task}/ratio_${curation.ratio}"
+s3_endpoint_url: "https://s3.fraunhofer.de"
+dry_run: false 
+curation:
+  method: ["template-text", "template-image", "image-based", "linear-classifier", "trak"]
+  task: ["fitzpatrick17k", "pcam", "fairvision/AMD", "food101", "cifar100"]
+  ratios: [0.1, 0.2, 0.5, 0.8]
+  # indistribution_data_tar: ${get_data_tar:${curation.task}}

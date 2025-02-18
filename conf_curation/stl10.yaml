@@ -7,4 +7,4 @@ curation:
   method: "template-text"
   task: "stl10"
   ratio: 0.5
-  indistribution_data_tar: "/datasets/stl10/stl10-train-{000000..000004}.tar"
+  indistribution_data_tar: "/datasets/stl10/shards/stl10-train-{000000..000004}.tar"
